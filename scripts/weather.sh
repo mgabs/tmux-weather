@@ -1,10 +1,25 @@
 #!/usr/bin/env bash
 
+PATH="/usr/local/bin:$PATH:/usr/sbin"
+
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$CURRENT_DIR/helpers.sh"
 
+get_dynamic_location() {
+  local location_api=$(get_tmux_option "@tmux-weather-location-api" "freegeoip.app")
+  curl -s "https://freegeoip.app/json/" | grep -o '"city":"[^"]*' | grep -o '[^"]*$'
+}
+
 get_weather() {
-  local location=$(get_tmux_option "@tmux-weather-location")
+  local dynamic_location=$(get_tmux_option "@tmux-weather-dynamic-location" "false")
+  local location
+
+  if [ "$dynamic_location" = "true" ]; then
+    location=$(get_dynamic_location)
+  else
+    location=$(get_tmux_option "@tmux-weather-location")
+  fi
+
   local format=$(get_tmux_option "@tmux-weather-format" 1)
   local units=$(get_tmux_option "@tmux-weather-units" "m")
 

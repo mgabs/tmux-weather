@@ -37,7 +37,9 @@ then you will see the current weather in the status line: `⛅️ -1°C`
 ## Customization
 The plugin could be customized with:
 * `set-option -g @tmux-weather-interval 15` - Set up the update interval in minutes, by default it is 15 minutes.
-* `set-option -g @tmux-weather-location "Tomsk"` - Set up your location, by default you will get the weather for your current location based on your IP address.
+* `set-option -g @tmux-weather-dynamic-location "true"` - Set to "true" to enable dynamic location based on IP address. Defaults to "false".
+* `set-option -g @tmux-weather-location "Tomsk"` - Set your location manually. This is used when `@tmux-weather-dynamic-location` is set to "false".
+* `set-option -g @tmux-weather-location-api "freegeoip.app"` - Set the API to be used for dynamic location. Defaults to "freegeoip.app".
 * `set-option -g @tmux-weather-format "%c+%t+%w"` - Set up a representation, by default it is 1, for more options go to [https://github.com/chubin/wttr.in#one-line-output](https://github.com/chubin/wttr.in#one-line-output)
 * `set-option -g @tmux-weather-units" "m"` - Set up weather units (u - for USCS, m - for metric system), by default used metric units.
 
