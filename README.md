@@ -1,7 +1,7 @@
 # Weather plugin for tmux
 [![GitHub](https://img.shields.io/github/license/xamut/tmux-weather)](https://opensource.org/licenses/MIT)
 
-Shows weather in the status line, data provided by [wttr.in](https://wttr.in)
+Shows weather in the status line, data provided by [Open-Meteo](https://open-meteo.com)
 
 ![tmux-weather](./assets/tmux-preview.png)
 
@@ -9,6 +9,8 @@ Shows weather in the status line, data provided by [wttr.in](https://wttr.in)
 ### Requirements
 * curl
 * sed
+* grep
+* awk
 
 ### With Tmux Plugin Manager
 Add the plugin in `.tmux.conf`:
@@ -32,16 +34,14 @@ Add `#{weather}` somewhere in the right status line:
 ```
 set-option -g status-right "#{weather}"
 ```
-then you will see the current weather in the status line: `⛅️ -1°C`
+then you will see the weather in the status line: `☀️ 20.5/10.2°C 15.3km/h`
 
 ## Customization
 The plugin could be customized with:
 * `set-option -g @tmux-weather-interval 15` - Set up the update interval in minutes, by default it is 15 minutes.
-* `set-option -g @tmux-weather-dynamic-location "true"` - Set to "true" to enable dynamic location based on IP address. Defaults to "false".
-* `set-option -g @tmux-weather-location "Tomsk"` - Set your location manually. This is used when `@tmux-weather-dynamic-location` is set to "false".
-* `set-option -g @tmux-weather-location-api "freegeoip.app"` - Set the API to be used for dynamic location. Defaults to "freegeoip.app".
-* `set-option -g @tmux-weather-format "%c+%t+%w"` - Set up a representation, by default it is 1, for more options go to [https://github.com/chubin/wttr.in#one-line-output](https://github.com/chubin/wttr.in#one-line-output)
-* `set-option -g @tmux-weather-units" "m"` - Set up weather units (u - for USCS, m - for metric system), by default used metric units.
+* `set-option -g @tmux-weather-dynamic-location "true"` - Set to "true" to enable dynamic location based on IP address via `ip-api.com`. Defaults to "false".
+* `set-option -g @tmux-weather-location "New York"` - Set your location manually. This is used when `@tmux-weather-dynamic-location` is set to "false". Coordinates are automatically looked up via Open-Meteo Geocoding API.
+* `set-option -g @tmux-weather-units "m"` - Set up weather units (`m` - for Metric/Celsius/kmh, `u` - for USCS/Fahrenheit/mph), by default used metric units.
 
 ## Other plugins
 * [tmux-network-bandwidth](https://github.com/xamut/tmux-network-bandwidth)
