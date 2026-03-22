@@ -3,15 +3,8 @@
 #!/usr/bin/env bash
 
 get_tmux_option() {
-  local option_name="$1"
-  local default_value="$2"
-  local option_value=$(tmux show-option -gqv "$option_name")
-
-  if [ -z "$option_value" ]; then
-    printf "%s" "$default_value"
-  else
-    printf "%s" "$option_value"
-  fi
+  local option_value=$(tmux show-option -gqv "$1")
+  printf "%s" "${option_value:-$2}"
 }
 
 set_tmux_option() {
