@@ -34,7 +34,7 @@ Add `#{weather}` somewhere in the right status line:
 ```
 set-option -g status-right "#{weather}"
 ```
-then you will see the weather in the status line: `☀️ 20.5/10.2°C 15.3km/h`
+then you will see the weather in the status line: `☀️ 20.5°C (Feels 10.2°C) 💨 15.3km/h`
 
 ## Customization
 The plugin could be customized with:

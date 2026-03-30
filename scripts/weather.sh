@@ -10,7 +10,7 @@ get_coordinates() {
   local cached_time=$(get_tmux_option "@weather-cached-coords-time" 0)
   local current_time=$(date "+%s")
   local delta=$((current_time - cached_time))
-  
+
   # Cache for 24 hours (86400 seconds)
   if [ -n "$cached" ] && [ $delta -lt 86400 ]; then
     echo "$cached"
@@ -34,7 +34,7 @@ get_coordinates() {
     lat=$(echo "$geo_json" | grep -o '"latitude":[0-9.-]*' | head -1 | cut -d: -f2)
     lon=$(echo "$geo_json" | grep -o '"longitude":[0-9.-]*' | head -1 | cut -d: -f2)
   fi
-  
+
   if [[ -n "$lat" ]] && [[ -n "$lon" ]]; then
     local new_coords="$lat,$lon"
     set_tmux_option "@weather-cached-coords" "$new_coords"
@@ -47,15 +47,15 @@ get_coordinates() {
 
 get_weather_desc() {
   case $1 in
-    0) echo "☀️";;
-    1|2|3) echo "⛅";;
-    45|48) echo "🌫️";;
-    51|53|55) echo "🌦️";;
-    61|63|65) echo "🌧️";;
-    71|73|75|77|85|86) echo "❄️";;
-    80|81|82) echo "🌦️";;
-    95|96|99) echo "⛈️";;
-    *) echo "❓";;
+  0) echo "☀️" ;;
+  1 | 2 | 3) echo "⛅" ;;
+  45 | 48) echo "🌫️" ;;
+  51 | 53 | 55) echo "🌦️" ;;
+  61 | 63 | 65) echo "🌧️" ;;
+  71 | 73 | 75 | 77 | 85 | 86) echo "❄️" ;;
+  80 | 81 | 82) echo "🌦️" ;;
+  95 | 96 | 99) echo "⛈️" ;;
+  *) echo "❓" ;;
   esac
 }
 
@@ -64,33 +64,38 @@ get_weather() {
   if [ -z "$coords" ]; then
     return 1
   fi
-  
+
   local lat=$(echo "$coords" | cut -d, -f1)
   local lon=$(echo "$coords" | cut -d, -f2)
   local units=$(get_tmux_option "@tmux-weather-units" "m")
-  
+
   local temp_unit="celsius"
   local t_suffix="°C"
-  
+  local wind_unit="kmh"
+  local w_suffix="km/h"
+
   if [ "$units" = "u" ]; then
     temp_unit="fahrenheit"
     t_suffix="°F"
+    wind_unit="mph"
+    w_suffix="mph"
   fi
 
-  local api_url="https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=weather_code,temperature_2m,apparent_temperature&timezone=auto&temperature_unit=$temp_unit"
+  local api_url="https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=weather_code,temperature_2m,apparent_temperature,wind_speed_10m&timezone=auto&temperature_unit=$temp_unit&wind_speed_unit=$wind_unit"
 
   local json=$(curl -s --max-time 5 "$api_url")
-  
+
   # Parse current weather object using awk in one pass
-  local data=$(echo "$json" | awk -F'"current":{' '{print $2}' | awk -F'[,}]' '{for(i=1;i<=NF;i++){if($i~/"weather_code"/){split($i,a,":");c=a[2]}if($i~/"temperature_2m"/){split($i,a,":");t=a[2]}if($i~/"apparent_temperature"/){split($i,a,":");f=a[2]}}} END{print c, t, f}')
+  local data=$(echo "$json" | awk -F'"current":{' '{print $2}' | awk -F'[,}]' '{for(i=1;i<=NF;i++){if($i~/"weather_code"/){split($i,a,":");c=a[2]}if($i~/"temperature_2m"/){split($i,a,":");t=a[2]}if($i~/"apparent_temperature"/){split($i,a,":");f=a[2]}if($i~/"wind_speed_10m"/){split($i,a,":");w=a[2]}}} END{print c, t, f, w}')
   local code=$(echo "$data" | awk '{print $1}')
   local temp=$(echo "$data" | awk '{print $2}')
   local feel=$(echo "$data" | awk '{print $3}')
+  local wind=$(echo "$data" | awk '{print $4}')
 
-  if [ -n "$temp" ] && [ -n "$feel" ] && [ -n "$code" ]; then
+  if [ -n "$temp" ] && [ -n "$feel" ] && [ -n "$code" ] && [ -n "$wind" ]; then
     local desc=$(get_weather_desc "$code")
-    # Format: Emoji Temp (Feels RealFeel)
-    echo "$desc ${temp}${t_suffix} (Feels ${feel}${t_suffix})"
+    # Format: Emoji Temp (Feels RealFeel) Wind
+    echo "$desc ${temp}${t_suffix}(${feel}${t_suffix}) 💨 ${wind}${w_suffix}"
     return 0
   fi
   return 1
