@@ -81,21 +81,27 @@ get_weather() {
     w_suffix="mph"
   fi
 
-  local api_url="https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=weather_code,temperature_2m,apparent_temperature,wind_speed_10m&timezone=auto&temperature_unit=$temp_unit&wind_speed_unit=$wind_unit"
+  local api_url="https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current=weather_code,temperature_2m,apparent_temperature,wind_speed_10m,precipitation_probability&timezone=auto&temperature_unit=$temp_unit&wind_speed_unit=$wind_unit"
 
   local json=$(curl -s --max-time 5 "$api_url")
 
   # Parse current weather object using awk in one pass
-  local data=$(echo "$json" | awk -F'"current":{' '{print $2}' | awk -F'[,}]' '{for(i=1;i<=NF;i++){if($i~/"weather_code"/){split($i,a,":");c=a[2]}if($i~/"temperature_2m"/){split($i,a,":");t=a[2]}if($i~/"apparent_temperature"/){split($i,a,":");f=a[2]}if($i~/"wind_speed_10m"/){split($i,a,":");w=a[2]}}} END{print c, t, f, w}')
+  local data=$(echo "$json" | awk -F'"current":{' '{print $2}' | awk -F'[,}]' '{for(i=1;i<=NF;i++){if($i~/"weather_code"/){split($i,a,":");c=a[2]}if($i~/"temperature_2m"/){split($i,a,":");t=a[2]}if($i~/"apparent_temperature"/){split($i,a,":");f=a[2]}if($i~/"wind_speed_10m"/){split($i,a,":");w=a[2]}if($i~/"precipitation_probability"/){split($i,a,":");p=a[2]}}} END{print c, t, f, w, p}')
   local code=$(echo "$data" | awk '{print $1}')
   local temp=$(echo "$data" | awk '{print $2}')
   local feel=$(echo "$data" | awk '{print $3}')
   local wind=$(echo "$data" | awk '{print $4}')
+  local rain_prob=$(echo "$data" | awk '{print $5}')
 
   if [ -n "$temp" ] && [ -n "$feel" ] && [ -n "$code" ] && [ -n "$wind" ]; then
     local desc=$(get_weather_desc "$code")
-    # Format: Emoji Temp (Feels RealFeel) Wind
-    echo "$desc ${temp}${t_suffix}(${feel}${t_suffix}) 💨 ${wind}${w_suffix}"
+    local rain_threshold=$(get_tmux_option "@tmux-weather-rain-threshold" 15)
+    local rain_suffix=""
+    if [ -n "$rain_prob" ] && [ "$rain_prob" -ge "$rain_threshold" ]; then
+      rain_suffix=" ☔ ${rain_prob}%"
+    fi
+    # Format: Emoji Temp (Feels RealFeel) Wind Rain%
+    echo "$desc ${temp}${t_suffix}(${feel}${t_suffix}) 💨 ${wind}${w_suffix}${rain_suffix}"
     return 0
   fi
   return 1
@@ -125,4 +131,6 @@ main() {
   echo -n "$previous_value"
 }
 
-main
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main
+fi

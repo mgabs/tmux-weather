@@ -42,6 +42,7 @@ The plugin could be customized with:
 * `set-option -g @tmux-weather-dynamic-location "true"` - Set to "true" to enable dynamic location based on IP address via `ip-api.com`. Defaults to "false".
 * `set-option -g @tmux-weather-location "New York"` - Set your location manually. This is used when `@tmux-weather-dynamic-location` is set to "false". Coordinates are automatically looked up via Open-Meteo Geocoding API.
 * `set-option -g @tmux-weather-units "m"` - Set up weather units (`m` - for Metric/Celsius/kmh, `u` - for USCS/Fahrenheit/mph), by default used metric units.
+* `set-option -g @tmux-weather-rain-threshold 15` - Set up the rain possibility threshold (%). The rain indicator `☔` will only be shown when the probability is greater than or equal to this value. Defaults to 15.
 
 ## Other plugins
 * [tmux-network-bandwidth](https://github.com/xamut/tmux-network-bandwidth)
